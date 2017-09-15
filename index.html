@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>JMIR Application</title>
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <link href="CSS/Stylesheet.css" rel="stylesheet"> 
+        <!-- jQuery and JS libraries needed by Bootstrap -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <!-- Angular -->
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+        <!-- Custom CSS -->
+
+
+    </head>
+    <body ng-app="JMIRTest" ng-controller="mainController as $ctrl">
+        <nav class="navbar navbar-default" align="center" >
+                <div class="container-fluid">
+                    <!-- Mobile Devices -->
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topBar" aria-expanded="false">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                    </div>
+
+                    <!-- Desktop -->
+                    <div class="collapse navbar-collapse" id="topBar" >
+                        <ul class="nav navbar-nav navbar-center">
+                            <li  ng-class="{'active':selectedPage == 0}"><a href="#/add" ng-click="changeView(0)">Add Information</a></li>
+                            <li class="divider-vertical"></li>
+                            <li  ng-class="{'active':selectedPage == 1}"><a href="#/list" ng-click="changeView(1)">Listing Page</a></li>
+                        </ul>
+                    </div>  
+            </div>
+        </nav>
+        <div class="container" ng-if="selectedPage == 0" >
+            <form class="form-horizontal center-block" name="userForm" ng-submit="submitForm(userForm.$valid)" novalidate> 
+                <div class="form-group">
+                     <label for="name">NAME<span style="color:red;">*</span></label>
+                     <input type="text" class="form-control input-lg" name="name"  data-ng-model="$ctrl.userData.name" ng-minlength="2" ng-pattern="/^[A-Za-z\s]*$/" required>
+                     <p ng-show="userForm.name.$error.pattern" class="help-block">Only Alpha Characters</p>
+                     <p ng-show="userForm.name.$error.minlength && !userForm.name.$pristine" class="help-block">Name must be have at least 2 characters.</p>
+                     <p ng-show="(userForm.name.$invalid && !userForm.name.$pristine) && !userForm.name.$error.minlength && !userForm.name.$error.pattern" class="help-block">You name is required.</p>
+                </div>
+                <div class="form-group">
+                        <label for="provinces">PROVINCE<span style="color:red;">*</span></label>
+                        
+                         <div class="dropdown" name="dropdown">
+                            <button class="btn btn-default dropdown-toggle input-lg" type="button" id="provincesDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" ng-click="validate = true;">
+                                <span class="title">{{province}}</span>
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="provincesDropdown">
+                                <li ng-repeat="prov in provinceArr">
+                                        <a href="#" ng-click="selectProvince(prov.id)"> {{ prov.name }} </a>
+                                 </li>
+                            </ul>
+                        </div>
+                        <p ng-show="province == null && validate" class="help-block">Must select a province.</p>
+                </div>
+                <div class="form-group">
+                        <div class="form-group row"style="height:10px !important;">
+                            <label class ="col-md-1" for="phone">TELEPHONE<span style="color:red;">*</span></label>
+                            <label class ="col-md-2" for="postalCode">POSTAL CODE<span style="color:red;">*</span></label>
+                        </div>   
+                        <div class="form-group row" style="height:10px !important;">
+                            <input type="text" class="form-control input-lg col-md-1" id="phone" name="phone"  ng-model="$ctrl.userData.phone" ng-pattern="/^(\([0-9]{3}\)\s[0-9]{3}-[0-9]{4})|([0-9]{3}-[0-9]{3}-[0-9]{4})$/" required>
+                            <input type="text" class="form-control input-lg col-md-2" id="postalCode" name="postalCode" ng-model="$ctrl.userData.postalCode" ng-pattern="/^[A-Z][0-9][A-Z]\s?[0-9][A-Z][0-9]$/" required>
+                        </div> 
+                        <div class="form-group row" >
+                            <p ng-show="userForm.phone.$invalid && !userForm.phone.$pristine" class="help-block col-md-6">Phone must be in the right format.</p>
+                            <p ng-show="userForm.postalCode.$invalid && !userForm.postalCode.$pristine" class="help-block" style="margin-left:51%; margin-top:4%;">Postal Code must be in the right format.</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                            <label for="salary">SALARY<span style="color:red;">*</span></label>
+                            <input type="text" class="form-control input-lg" id="salary" name="salary" ng-model="$ctrl.userData.salary"  ng-pattern="salaryVal" required>
+                            <p ng-show="userForm.salary.$invalid  && !userForm.salary.$pristine" class="help-block">Salary must be in the right format.</p>
+                    </div>
+                    <div class="form-group">        
+                            <div class="col-sm-offset-9 col-sm-9 save">
+                              <button type="submit" class="btn btn-default btn-lg" ng-disabled="userForm.$invalid || !province" ng-click="addUser($ctrl.userData)">SAVE</button>
+                            </div>
+                    </div>
+             </form>
+        </div>
+        <div class="confirmation center-block" ng-if="selectedPage == 2">
+            <div class="alert alert-info "> Your data has been saved. Go to listing page to see.</div>
+            <div class="container conf" >
+                <div class="row">
+                    <label class="col-md-2">Name</label>
+                    <label class="col-md-1">:</label>
+                    <label class="col-md-3 data">{{ $ctrl.userData.name }}</label>
+                </div>
+                <div class="row">
+                        <label class="col-md-2">Province</label>
+                        <label class="col-md-1">:</label>
+                        <label class="col-md-3 data">{{ province }}</label>
+                </div>
+                <div class="row">
+                        <label class="col-md-2">Telephone</label>
+                        <label class="col-md-1">:</label>
+                        <label class="col-md-3 data">{{ $ctrl.userData.phone }}</label>
+                </div>
+                <div class="row">
+                        <label class="col-md-2">Postal Code</label>
+                        <label class="col-md-1">:</label>
+                        <label class="col-md-3 data">{{ $ctrl.userData.postalCode }}</label>
+                </div>
+                <div class="row">
+                        <label class="col-md-2">Salary</label>
+                        <label class="col-md-1">:</label>
+                        <label class="col-md-3 data">{{ $ctrl.userData.salary }}</label>
+                </div>
+            </div>
+        </div>
+        <div class="confirmation center-block" ng-if="selectedPage == 1" >
+            <div class="table-responsive" ng-init="updateUserTable(1)">
+                <table class="table" data-toggle="table" data-query-params="queryParams" data-pagination="true">
+                      <tr>
+                          <th class="tableheader">Name</th>
+                          <th class="tableheader">Province</th>
+                          <th class="tableheader">Telephone</th>
+                          <th class="tableheader">Postal Code</th>
+                          <th class="tableheader">Salary</th>
+                      </tr>
+                      <tr  class="tabledef" style="background: white;" ng-repeat="user in userTable">
+                            <td>{{user.name}}</td>
+                            <td>{{user.prov}}</td>
+                            <td>{{user.phone}}</td>
+                            <td>{{user.postal_code}}</td>
+                            <td>{{user.salary}}</td>
+                      </tr>
+                </table>
+            </div>
+            <nav aria-label="Page navigation">
+                <ul class="pagination" >
+                     <li>
+                                <a href="#" aria-label="Previous" ng-click="changePage(-1)">
+                                  <span aria-hidden="true" style="color: #868686 !important;" class="glyphicon glyphicon-chevron-left"></span>
+                                </a>
+                     </li>
+                    <li ><a ng-click="updateUserTable(1)">{{1}}</a></li>
+                    <li ng-show="showLeft" ><a ng-click="changePage(-1)"> ... </a></li>
+                    <li><a ng-click="updateUserTable(currentPage)" ng-init"updateUserTable(currentPage)"> {{currentPage}} </a></li>
+                    <li ng-show="showRight"><a ng-click="changePage(1)"> ... </a></li>
+                    <li><a ng-click="updateUserTable(pageLength)">{{ pageLength }}</a></li>
+                    <li>
+                            <a href="#" aria-label="Next" >
+                              <span aria-hidden="true"  style="color: #868686 !important;"  class="glyphicon glyphicon-chevron-right"  ng-click="changePage(1)"></span>
+                            </a>
+                    </li>
+                </ul> 
+             </nav>   
+        </div>
+        <script>
+            angular.module("JMIRTest", []).controller('mainController', ['$scope', '$http', function($scope, $http) {
+                $scope.selectedPage = 0;
+                $scope.validate = false;
+                $scope.var = true;
+                $scope.currentPage= 0;
+                $scope.showRight = true;
+                $scope.showLeft = true;
+                $scope.pageLength = 0;
+                $scope.pageAmount = [];
+                $scope.provinceArr =[];
+                $scope.userArr =[];
+                $scope.userTable =[];
+                $scope.provinceIndex;
+                $scope.salaryVal = new RegExp('^([0-9]{1,3}[,]?)[0-9]{1,3}([\.]{1}[0-9]{2})?$');
+                $scope.userData = {};
+
+                $scope.changePage= function(direction)
+                {
+                    if(direction == -1){
+                        if($scope.currentPage >= 2)
+                            $scope.currentPage--;        
+                    }
+                    if(direction == 1){
+                        if($scope.currentPage < $scope.pageLength - 1)
+                        $scope.currentPage++;
+                    }
+
+                    if($scope.currentPage == 2)
+                         $scope.showLeft = false;
+                    else    
+                        $scope.showLeft = true; 
+
+                    if($scope.currentPage == $scope.pageLength - 1) 
+                            $scope.showRight = false;
+                     else
+                            $scope.showRight = true;
+
+                    $scope.updateUserTable($scope.currentPage);
+                }
+                if($scope.var ) {       
+                $http({
+                        url: 'php/getProvinces.php',
+                        method: 'GET'
+                    }).then(function success(response) {
+                        for(x = 0; x < response.data.length ; x++){
+                                $scope.provinceArr.push(JSON.parse(response.data[x]));
+                        }
+                    }, function error(response) {
+                        alert(response);
+                    });
+
+                    $scope.var = false;
+                }
+
+                $scope.userArr = [];
+                    $http({
+                        url: 'php/getUsers.php',
+                        method: 'GET'
+                    }).then(function success(response) {
+                        for(x = 0; x < response.data.length ; x++){
+                            $scope.userArr.push(JSON.parse(response.data[x]));
+                        }
+                        $scope.pageAmount  =Array(Math.ceil(response.data.length / 10)).fill(1).map((x,i)=>i);
+                        $scope.pageLength  = Math.ceil(response.data.length / 10);
+                        $scope.currentPage = Math.ceil($scope.pageLength / 2);
+                    }, function error(response) {
+                        alert(response);
+                    }); 
+
+                    
+
+                $scope.updateUserTable = function(page){
+                    var max = page * 10;
+                    var min = max - 10;
+                    if(max > $scope.userArr.length)
+                        max = $scope.userArr.length;
+
+                    $scope.userTable = [];
+
+                   for(i = min; i < max; i++){
+                        $scope.userTable.push($scope.userArr[i]);
+                    }
+
+                }
+
+                $scope.addUser = function(newData) {
+                    $scope.userData = newData;
+                    $scope.userData.provinceIndex = $scope.provinceIndex + 1;
+                    newData.prov = $scope.provinceArr[$scope.provinceIndex].name;
+                    newData.postal_code = newData.postalCode;
+                    $scope.userArr.push(newData);
+                    //$scope.userArr.push([{name: newData.name}, {prov: $scope.provinceArr[$province -1].name}, {phone: newData.phone}, {postal_code : newData}]);
+                    $http({
+                        url: 'php/addUser.php',
+                        headers: {'Content-Type' : 'application/x-www-form-urlencoded'}, 
+                        data: $scope.userData,
+                        method: 'POST'
+                    }).then(function successCallback(response) {
+                        $scope.selectedPage = 2;
+                      }, function errorCallback(response) {
+                        console.log(response);
+                        $scope.selectedPage = 2;
+                      });
+                }
+
+                $scope.changeView = function($view) {
+                    $scope.selectedPage = $view;  
+                };
+
+                $scope.selectProvince = function($province) {
+                    $scope.provinceIndex = $province -1;
+                    $scope.province = $scope.provinceArr[$province -1].name;
+                    if($scope.province == 'Quebec')
+                        $scope.salaryVal = new RegExp('^[0-9]{1,3}\\s[0-9]{0,3}(,[0-9]{2})?$');
+                    else
+                        $scope.salaryVal = new RegExp('^([0-9]{1,3}[,]?)[0-9]{0,3}([\.]{1}[0-9]{2})?$');
+                };  
+
+                $scope.clear = function(){
+                    $scope.userData.clear();
+                }
+
+                $scope.queryParams =function() {
+                    return {
+                        type: 'owner',
+                        direction: 'desc',
+                        per_page: 10,
+                        page: 6
+                    };
+                }
+
+            }]);  
+        </script>
+    </body>
+</html>
